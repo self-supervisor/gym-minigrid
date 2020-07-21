@@ -55,6 +55,15 @@ class DoorKeyEnv16x16(DoorKeyEnv):
     def __init__(self):
         super().__init__(size=16)
 
+class DoorKeyEnv7x7(DoorKeyEnv):
+    def __init__(self):
+        super().__init__(size=7)
+
+register(
+    id='MiniGrid-DoorKey-7x7-v0',
+    entry_point='gym_minigrid.envs:DoorKeyEnv7x7'
+)
+
 register(
     id='MiniGrid-DoorKey-5x5-v0',
     entry_point='gym_minigrid.envs:DoorKeyEnv5x5'
