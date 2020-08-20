@@ -2,6 +2,7 @@ import math
 import hashlib
 import gym
 from enum import IntEnum
+import random
 import numpy as np
 from gym import error, spaces, utils
 from gym.utils import seeding
@@ -21,6 +22,11 @@ COLORS = {
 }
 
 COLOR_NAMES = sorted(list(COLORS.keys()))
+
+
+COLORS_FOR_RANDOM_TILES = COLORS.copy()
+del COLORS_FOR_RANDOM_TILES['green']
+del COLORS_FOR_RANDOM_TILES['grey']
 
 # Used to map colors to integers
 COLOR_TO_IDX = {
@@ -47,6 +53,7 @@ OBJECT_TO_IDX = {
     'goal'          : 8,
     'lava'          : 9,
     'agent'         : 10,
+    'random_tile'   : 11,
 }
 
 IDX_TO_OBJECT = dict(zip(OBJECT_TO_IDX.values(), OBJECT_TO_IDX.keys()))
@@ -142,6 +149,8 @@ class WorldObj:
             v = Goal()
         elif obj_type == 'lava':
             v = Lava()
+        elif obj_type == 'random_tile':
+            v = RandomTile()
         else:
             assert False, "unknown object type in decode '%s'" % obj_type
 
@@ -150,6 +159,22 @@ class WorldObj:
     def render(self, r):
         """Draw this object with the given renderer"""
         raise NotImplementedError
+
+class RandomTile(WorldObj):
+    def __init__(self):
+        rand_color = random.choice(list(COLORS_FOR_RANDOM_TILES))
+        super().__init__('random_tile', rand_color)
+
+    def can_overlap(self):
+        return True
+
+    def randomise_color(self):
+        self.color = random.choice(list(COLORS_FOR_RANDOM_TILES))
+
+    def render(self, img):
+
+        self.randomise_color()
+        fill_coords(img, point_in_rect(0, 1, 0, 1), COLORS_FOR_RANDOM_TILES[self.color])
 
 class Goal(WorldObj):
     def __init__(self):
@@ -176,7 +201,6 @@ class Floor(WorldObj):
         # Give the floor a pale color
         color = COLORS[self.color] / 2
         fill_coords(img, point_in_rect(0.031, 1, 0.031, 1), color)
-
 
 class Lava(WorldObj):
     def __init__(self):
@@ -652,6 +676,7 @@ class MiniGridEnv(gym.Env):
         seed=1337,
         agent_view_size=7
     ):
+        self.step_count = 0
         # Can't set both grid_size and width/height
         if grid_size:
             assert width == None and height == None
