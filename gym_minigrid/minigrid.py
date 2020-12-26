@@ -729,6 +729,15 @@ class MiniGridEnv(gym.Env):
         self.reset()
 
     def reset(self):
+        """
+        This makes the environment the same 
+        every episode.
+        """
+        self.seed(self.env_seed)
+        obs = self._reset()
+        return obs 
+
+    def _reset(self):
         # Current position and direction of the agent
         self.agent_pos = None
         self.agent_dir = None
@@ -759,6 +768,7 @@ class MiniGridEnv(gym.Env):
     def seed(self, seed=1337):
         # Seed the random number generator
         self.np_random, _ = seeding.np_random(seed)
+        self.env_seed = seed
         return [seed]
 
     def hash(self, size=16):
